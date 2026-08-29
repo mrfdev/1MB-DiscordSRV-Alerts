@@ -1,0 +1,49 @@
+# Alert-ID: cmi/player-tempban
+# Description: Logs a temporary CMI player ban with Discord timestamps.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: verified
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/_alert%20-%20cmi%20tempban%20event.yml
+# Origin-Version: 0.0.3
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: 1.30.5
+# Verified-Paper: 26.2-120
+# Verified-Java: 25
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: 2026-08-29
+
+Alerts:
+  - Trigger: com.Zrips.CMI.events.CMIPlayerBanEvent
+    Async: false
+    Conditions:
+      - "#event.getUntil() != null"
+      - "#event.getUntil() > T(java.lang.System).currentTimeMillis()"
+    Channel: logs
+    IgnoreCancelled: false
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#ff8800"
+      ThumbnailUrl: "https://crafatar.com/avatars/${#event.getBanned()}?overlay"
+      Author:
+        ImageUrl: "{botavatarurl}"
+        Name: "CMI temporary ban"
+        Url: ""
+      Title:
+        Text: "${T(org.bukkit.Bukkit).getOfflinePlayer(#event.getBanned()).getName() ?: 'Unknown'} was temporarily banned"
+        Url: ""
+      Fields:
+        - "Player:;`${T(org.bukkit.Bukkit).getOfflinePlayer(#event.getBanned()).getName() ?: 'Unknown'}`;true"
+        - "By:;`${#event.getBannedBy()?.getName() ?: 'Console'}`;true"
+        - "Started:;<t:${T(java.lang.Math).floorDiv(T(java.lang.System).currentTimeMillis(), 1000)}:F>;true"
+        - "Ends:;<t:${T(java.lang.Math).floorDiv(#event.getUntil(), 1000)}:F>;true"
+        - "Duration:;<t:${T(java.lang.Math).floorDiv(#event.getUntil(), 1000)}:R>;true"
+        - "Reason:;`${#event.getReason() == null or #event.getReason().isEmpty() ? 'No reason supplied' : #event.getReason()}`;false"
+      Timestamp: true

@@ -1,0 +1,39 @@
+# Alert-ID: bukkit/player-join
+# Description: Announces a visible player joining without exposing network information.
+# Plugin: Paper/Bukkit
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alerts.yml
+# Origin-Version: 0.3.1
+# Origin-Build: 038
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: org.bukkit.event.player.PlayerJoinEvent
+    Async: false
+    Conditions:
+      - '!#player.hasPermission("discordsrv.silentjoin")'
+    Channel: global
+    IgnoreCancelled: false
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#00ff00"
+      ThumbnailUrl: "{embedavatarurl}"
+      Title:
+        Text: "${!#player.hasPlayedBefore() ? 'A new player joined for the first time' : '{displayname} joined the server'}"
+        Url: ""
+      Footer:
+        Text: "Players online: ${#server.getOnlinePlayers().size()}"
+        IconUrl: ""
+      Timestamp: true

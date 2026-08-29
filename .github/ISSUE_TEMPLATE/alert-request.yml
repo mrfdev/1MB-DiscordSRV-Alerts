@@ -1,0 +1,38 @@
+name: Alert request
+description: Propose a new event, command, or plugin Alert Recipe.
+title: "[Alert request]: "
+labels: [enhancement, alert]
+body:
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin and version
+      placeholder: mcMMO 2.2.049
+    validations:
+      required: true
+  - type: input
+    id: trigger
+    attributes:
+      label: Event class or command trigger
+      placeholder: com.example.plugin.api.ExampleEvent
+    validations:
+      required: true
+  - type: dropdown
+    id: channel
+    attributes:
+      label: Intended destination
+      options: [global, staff, logs]
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Desired output
+      description: Describe the useful fields and who should see them.
+    validations:
+      required: true
+  - type: input
+    id: origin
+    attributes:
+      label: Existing source or credit
+      description: Link the original snippet or name the contributor if this is based on prior work.

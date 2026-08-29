@@ -1,0 +1,41 @@
+# Alert-ID: cmi/player-unjailed
+# Description: Logs when CMI releases a player from a jail cell.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: hyper_toxic @ dynamiccraft
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20unjail%20-%20unjail%20user%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: com.Zrips.CMI.events.CMIPlayerUnjailEvent
+    Async: false
+    Conditions: []
+    Channel: logs
+    IgnoreCancelled: false
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#99ff99"
+      Title:
+        Text: "Player released from jail"
+        Url: ""
+      Fields:
+        - "Player:;`${#event.getUser().getName()}`;true"
+        - "Jail:;`${#event.getCell().getJail().getName()}`;true"
+        - "Cell:;`${#event.getCell().getId()}`;true"
+      Timestamp: true

@@ -1,0 +1,40 @@
+# Alert-ID: discordsrv/account-linked
+# Description: Announces a Minecraft and Discord account link.
+# Plugin: DiscordSRV
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: BoredManPlays
+# Credit: Wolfie
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alerts.yml
+# Origin-URL: https://discord.com/channels/135634590575493120/889139760067645460/956269618249474100
+# Origin-Version: 0.3.1
+# Origin-Build: 038
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: DiscordSRV 1.30.5
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: github.scarsz.discordsrv.api.events.AccountLinkedEvent
+    Async: false
+    Conditions: []
+    Channel: global
+    IgnoreCancelled: false
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#5865f2"
+      Author:
+        ImageUrl: "{botavatarurl}"
+        Name: "Account linked"
+        Url: ""
+      Description: "Minecraft player **${#event.getPlayer().getName()}** linked Discord account <@${#event.getUser().getId()}>."
+      Timestamp: true

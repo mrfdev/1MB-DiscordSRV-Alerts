@@ -1,0 +1,39 @@
+# Alert-ID: bukkit/player-quit
+# Description: Announces a player leaving without exposing network information.
+# Plugin: Paper/Bukkit
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: BoredManPlays
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/_alert%20-%20spy%20quit%20-%20detailed%20user%20quit%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 033
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: org.bukkit.event.player.PlayerQuitEvent
+    Async: false
+    Conditions: []
+    Channel: global
+    IgnoreCancelled: false
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#ff4444"
+      ThumbnailUrl: "{embedavatarurl}"
+      Title:
+        Text: "{displayname} left the server"
+        Url: ""
+      Footer:
+        Text: "Players online: ${#server.getOnlinePlayers().size()}"
+        IconUrl: ""
+      Timestamp: true

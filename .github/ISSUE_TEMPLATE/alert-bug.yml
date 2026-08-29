@@ -1,0 +1,34 @@
+name: Alert bug
+description: Report a Recipe that fails, misfires, or renders incorrectly.
+title: "[Alert bug]: "
+labels: [bug, alert]
+body:
+  - type: input
+    id: recipe
+    attributes:
+      label: Recipe ID
+      placeholder: cmi/staff-message
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Runtime versions
+      description: Include Paper build, Java, DiscordSRV, and the relevant plugin version.
+      placeholder: Paper 26.2-120, Java 25, DiscordSRV 1.30.5, CMI 9.8.9.9
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include the trigger, expected output, actual output, and console error with credentials removed.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed tokens, webhooks, account links, player IPs, and other private data.
+          required: true

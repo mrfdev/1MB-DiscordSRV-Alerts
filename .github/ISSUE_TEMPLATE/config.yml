@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: DiscordSRV support
+    url: https://discordsrv.com/discord
+    about: Ask general DiscordSRV installation or configuration questions upstream.

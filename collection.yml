@@ -1,0 +1,6 @@
+Version: 3.0.0
+Build: "001"
+Verified-Runtime:
+  Paper: 26.2-120
+  Java: "25"
+  DiscordSRV: 1.30.5

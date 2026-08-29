@@ -1,0 +1,42 @@
+{
+  "name": "1mb-discordsrv-alerts",
+  "version": "3.0.0",
+  "private": true,
+  "description": "A curated, tested collection of DiscordSRV Alerts for modern Paper servers, including Alerts developed, evaluated, or used on the 1MoreBlock.com Minecraft server.",
+  "type": "module",
+  "scripts": {
+    "validate": "node --import tsx src/cli.ts validate",
+    "generate": "node --import tsx src/cli.ts generate",
+    "inventory:live": "node --import tsx src/cli.ts inventory-live",
+    "test:deploy": "node --import tsx src/cli.ts deploy-test",
+    "test:restore": "node --import tsx src/cli.ts restore-test",
+    "release:prepare": "node --import tsx src/cli.ts release",
+    "release:tag": "node --import tsx src/cli.ts release-tag",
+    "site:data": "node --import tsx src/cli.ts site-data",
+    "site:dev": "npm run site:data && vite --config vite.config.ts",
+    "site:build": "npm run site:data && vite build --config vite.config.ts",
+    "site:preview": "vite preview --config vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "check": "npm run typecheck && npm run test && npm run validate && npm run site:build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "yaml": "^2.9.0",
+    "zod": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": true
+  }
+}

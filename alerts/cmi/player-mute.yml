@@ -1,0 +1,43 @@
+# Alert-ID: cmi/player-mute
+# Description: Logs a CMI mute command from a player or console with duration and reason.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 003
+# Status: verified
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20mute%20-%20user%20mute%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: 1.30.5
+# Verified-Paper: 26.2-120
+# Verified-Java: 25
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: 2026-08-29
+
+Alerts:
+  - Trigger: [/mute, /cmi]
+    Async: false
+    Conditions:
+      - "(#command.toLowerCase().startsWith('mute ') and #args.size() > 0) or (#command.toLowerCase().startsWith('cmi mute ') and #args.size() > 1)"
+    Channel: logs
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#e06666"
+      Author:
+        ImageUrl: "{botavatarurl}"
+        Name: "Player muted"
+        Url: ""
+      Description: |
+        **Staff:** `${#sender.getName()}`
+        **Player:** `${#command.toLowerCase().startsWith('cmi mute ') ? #args.get(1) : #args.get(0)}`
+        **Duration:** `${#command.toLowerCase().startsWith('cmi mute ') ? (#args.size() > 2 ? #args.get(2) : 'Permanent') : (#args.size() > 1 ? #args.get(1) : 'Permanent')}`
+        **Reason:** `${#command.toLowerCase().startsWith('cmi mute ') ? (#args.size() > 3 ? #command.split(' ', 5)[4] : 'No reason provided') : (#args.size() > 2 ? #command.split(' ', 4)[3] : 'No reason provided')}`
+      Timestamp: true

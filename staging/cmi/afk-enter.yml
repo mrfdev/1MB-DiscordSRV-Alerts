@@ -1,0 +1,42 @@
+# Alert-ID: cmi/afk-enter
+# Description: Announces when a visible player enters CMI AFK mode.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20afk%20-%20enter%20afk%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: CMI 9.8.9.9
+# Required-Plugin: PlaceholderAPI 2.12.3
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: com.Zrips.CMI.events.CMIAfkEnterEvent
+    Async: false
+    Conditions:
+      - '!T(java.lang.Class).forName("com.Zrips.CMI.Containers.CMIUser").getUser(#player).isVanished()'
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#869600"
+      ThumbnailUrl: "{embedavatarurl}"
+      Title:
+        Text: "{displayname} has ${#event.getType().toString() == 'manual' ? 'manually' : 'automatically'} gone idle."
+        Url: ""
+      Fields:
+        - "AFK reason:;%cmi_user_afk_msg%;true"
+        - "World:;`%cmi_player_world%`;true"
+      Timestamp: true

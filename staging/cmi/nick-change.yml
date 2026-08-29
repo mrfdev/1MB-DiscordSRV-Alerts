@@ -1,0 +1,39 @@
+# Alert-ID: cmi/nick-change
+# Description: Announces a CMI player nickname change.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zrips
+# Credit: DiscordSRV community members
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alerts.yml
+# Origin-URL: https://discord.com/channels/135634590575493120/1139022278814879826
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: com.Zrips.CMI.events.CMIPlayerNickNameChangeEvent
+    Async: false
+    Conditions: []
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#ff0000"
+      Author:
+        ImageUrl: "https://crafatar.com/avatars/${#event.getUser().getPlayer().getUniqueId()}?overlay"
+        Name: "/nick"
+        Url: ""
+      Description: "Player **`${#event.getUser().getPlayer().getName()}`** has changed their name to: `${#event.getNickName()}`"

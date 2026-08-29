@@ -1,0 +1,15 @@
+* text=auto eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.ts text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.jar binary
+
+# Preserve the recovery profile byte-for-byte, including legacy trailing spaces.
+profiles/1moreblock/alerts.yml whitespace=-trailing-space

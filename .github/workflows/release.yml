@@ -1,0 +1,42 @@
+name: Publish tagged release
+
+on:
+  push:
+    tags:
+      - "v*-b*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate tag and collection
+        run: |
+          expected="$(npm run --silent release:tag)"
+          test "$GITHUB_REF_NAME" = "$expected"
+          npm run check
+
+      - name: Prepare two release artifacts
+        run: npm run release:prepare
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          archive="dist/release/1MB-DiscordSRV-Alerts-${GITHUB_REF_NAME}.zip"
+          test -f "$archive"
+          gh release create "$GITHUB_REF_NAME" dist/release/alerts.yml "$archive" --generate-notes --title "1MB DiscordSRV Alerts ${GITHUB_REF_NAME}"

@@ -1,0 +1,39 @@
+# Alert-ID: discordsrv/account-unlinked
+# Description: Announces a Minecraft and Discord account unlink.
+# Plugin: DiscordSRV
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: BoredManPlays
+# Credit: Wolfie
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alerts.yml
+# Origin-Version: 0.3.1
+# Origin-Build: 038
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: DiscordSRV 1.30.5
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: github.scarsz.discordsrv.api.events.AccountUnlinkedEvent
+    Async: false
+    Conditions: []
+    Channel: global
+    IgnoreCancelled: false
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#747f8d"
+      Author:
+        ImageUrl: "{botavatarurl}"
+        Name: "Account unlinked"
+        Url: ""
+      Description: "Minecraft player **${#event.getPlayer().getName()}** unlinked Discord account <@${#event.getDiscordId()}>."
+      Timestamp: true

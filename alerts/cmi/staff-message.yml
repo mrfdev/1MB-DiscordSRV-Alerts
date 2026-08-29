@@ -1,0 +1,40 @@
+# Alert-ID: cmi/staff-message
+# Description: Mirrors a CMI staff message to a Discord staff channel.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 003
+# Status: verified
+# Authors: mrfloris
+# Credit: Venko
+# Credit: Zrips
+# Credit: The456gamer
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20staffmsg%20-%20patch%20cmi%20staffmsg%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: staff
+# Channel: staff
+# Verified-DiscordSRV: 1.30.5
+# Verified-Paper: 26.2-120
+# Verified-Java: 25
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: 2026-08-29
+
+Alerts:
+  - Trigger: com.Zrips.CMI.events.CMIStaffMessageEvent
+    Async: false
+    Conditions: []
+    Channel: staff
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#5a5aff"
+      Author:
+        ImageUrl: "{embedavatarurl}"
+        Name: "Staff chat"
+        Url: ""
+      Description: "**${#event.getSentBy().getName()}**: ${#event.getMessage()}"
+      Timestamp: true

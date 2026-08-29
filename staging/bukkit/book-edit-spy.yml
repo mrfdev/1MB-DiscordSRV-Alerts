@@ -1,0 +1,45 @@
+# Alert-ID: bukkit/book-edit-spy
+# Description: Logs edited or signed book text with player and location.
+# Plugin: Paper/Bukkit
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zerek
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/_alert%20-%20spy%20writable%20book%20-%20editing%20or%20signing%20book%20spy%20user%20event.yml
+# Origin-URL: https://discord.com/channels/135634590575493120/889139760067645460/892857994415599676
+# Origin-Version: 0.3.0
+# Origin-Build: 037
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: org.bukkit.event.player.PlayerEditBookEvent
+    Async: false
+    Conditions: []
+    Channel: logs
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#d89869"
+      ThumbnailUrl: "https://mineskin.eu/avatar/${#event.getPlayer().getName()}"
+      Title:
+        Text: "Book ${#event.isSigning() ? 'signed' : 'edited'}"
+        Url: ""
+      Description: |
+        `${#event.getPlayer().getName()}` ${#event.isSigning() ? 'signed a book' : 'edited a book'}.
+        **Title:** `${#event.getNewBookMeta().getTitle() ?: 'Untitled (unsigned)'}`
+        **Author:** `${#event.getNewBookMeta().getAuthor() ?: 'Unknown (unsigned)'}`
+        **Location:** `/tppos ${#player.getLocation().getBlockX()} ${#player.getLocation().getBlockY()} ${#player.getLocation().getBlockZ()} ${#player.getWorld().getName()}`
+        ```
+        ${T(java.lang.String).join(' ``` ```', #event.getNewBookMeta().getPages())}
+        ```
+      Timestamp: true

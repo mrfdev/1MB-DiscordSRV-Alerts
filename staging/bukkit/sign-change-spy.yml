@@ -1,0 +1,46 @@
+# Alert-ID: bukkit/sign-change-spy
+# Description: Logs non-empty sign changes with player, location, and all four lines.
+# Plugin: Paper/Bukkit
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zerek
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/_alert%20-%20spy%20sign%20-%20edit%20sign%20event.yml
+# Origin-URL: https://discord.com/channels/135634590575493120/1396748112541782046
+# Origin-Version: 0.3.0
+# Origin-Build: 033
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: org.bukkit.event.block.SignChangeEvent
+    Async: false
+    Conditions:
+      - "!#event.getLine(0).isEmpty() or !#event.getLine(1).isEmpty() or !#event.getLine(2).isEmpty() or !#event.getLine(3).isEmpty()"
+    Channel: logs
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#000001"
+      ThumbnailUrl: "https://mineskin.eu/avatar/${#event.getPlayer().getName()}"
+      Title:
+        Text: "Sign changed"
+        Url: ""
+      Description: |
+        Edited by `${#event.getPlayer().getName()}` at `/tppos ${#event.getBlock().getX()} ${#event.getBlock().getY()} ${#event.getBlock().getZ()} ${#event.getBlock().getWorld().getName()}`
+        ```
+        ${#event.getLine(0)}
+        ${#event.getLine(1)}
+        ${#event.getLine(2)}
+        ${#event.getLine(3)}
+        ```
+      Timestamp: true

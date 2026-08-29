@@ -1,0 +1,39 @@
+# Alert-ID: cmi/player-unban
+# Description: Logs a CMI player unban command with actor and target name.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 003
+# Status: verified
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20unban%20-%20unban%20user%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: 1.30.5
+# Verified-Paper: 26.2-120
+# Verified-Java: 25
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: 2026-08-29
+
+Alerts:
+  - Trigger: [/unban, /cmi]
+    Async: false
+    Conditions:
+      - "(#command.toLowerCase().startsWith('unban ') and #args.size() > 0) or (#command.toLowerCase().startsWith('cmi unban ') and #args.size() > 1)"
+    Channel: logs
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#4dd77a"
+      Author:
+        ImageUrl: "{botavatarurl}"
+        Name: "Player unbanned"
+        Url: ""
+      Description: "`${#sender.getName()}` unbanned **${#command.toLowerCase().startsWith('cmi unban ') ? #args.get(1) : #args.get(0)}**."
+      Timestamp: true

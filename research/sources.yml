@@ -1,0 +1,11 @@
+# Link-only discoveries and future research sources.
+# This file never grants permission to redistribute content from a listed source.
+Sources:
+  - Name: Legacy 1MB DiscordSRV collection
+    URL: https://github.com/mrfdev/CMI/tree/master/Resources/Add-ons/discordsrv
+    Status: migration-source
+    Notes: Review credits, versions, variants, and old simple-name triggers.
+  - Name: DiscordSRV Alerts forum
+    URL: https://discord.com/channels/135634590575493120/1047626426012155986
+    Status: later-review
+    Notes: Requires signed-in browser review; verify author permission before copying content.

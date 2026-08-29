@@ -1,0 +1,61 @@
+# macOS and editors
+.DS_Store
+**/.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local planning and environment files
+.scratch/
+.env
+.env.*
+!.env.example
+/test-harness/local.yml
+
+# Secrets and private material
+*.key
+*.pem
+*.p12
+*.jks
+/secrets/
+/private/
+/alerts/private/
+/alerts/local/
+
+# Private local Paper runtime: never track anything under this directory
+/servers/
+
+# Runtime binaries, archives, databases, and state
+*.jar
+*.db
+*.sqlite
+*.sqlite.*
+*.mv.db
+*.aof
+*.log
+*.lock
+*.pid
+*.zip
+*.tar
+*.tar.gz
+*.mca
+*.dat
+*.dat_old
+
+# Generated development output
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+.vite/
+.astro/
+.next/
+.venv/
+__pycache__/
+*.py[cod]
+*.tsbuildinfo
+/site/public/generated/

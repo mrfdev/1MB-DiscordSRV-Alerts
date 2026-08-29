@@ -1,0 +1,41 @@
+# Alert-ID: cmi/player-ban
+# Description: Logs a permanent CMI player ban with actor, reason, and identity.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: verified
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20ban%20-%20ban%20user%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: 1.30.5
+# Verified-Paper: 26.2-120
+# Verified-Java: 25
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: 2026-08-29
+
+Alerts:
+  - Trigger: com.Zrips.CMI.events.CMIPlayerBanEvent
+    Async: false
+    Conditions:
+      - "#event.getUntil() == null or #event.getUntil() <= T(java.lang.System).currentTimeMillis()"
+    Channel: logs
+    IgnoreCancelled: false
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#ff0000"
+      Author:
+        ImageUrl: "https://crafatar.com/avatars/${#event.getBanned()}?overlay"
+        Name: "Player banned"
+        Url: ""
+      Description: |
+        `${#event.getBannedBy()?.getName() ?: 'Console'}` permanently banned **${T(org.bukkit.Bukkit).getOfflinePlayer(#event.getBanned()).getName() ?: 'Unknown'}** (`${#event.getBanned()}`).
+        **Reason:** `${#event.getReason() ?: 'None provided'}`
+      Timestamp: true

@@ -1,0 +1,43 @@
+# Alert-ID: cmi/maintenance-enabled-player-command
+# Description: Announces when a permitted player enables CMI maintenance mode.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20maintenance%20true%20-%20maintenance%20mode%20on%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Async: false
+    Conditions:
+      - '#player.hasPermission("cmi.command.maintenance")'
+      - '#command.toLowerCase().startsWith("cmi maintenance true")'
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#ffbd5a"
+      ThumbnailUrl: "{botavatarurl}"
+      Title:
+        Text: "Server maintenance has started"
+        Url: ""
+      Description: "The server is temporarily unavailable while maintenance is completed."
+      Footer:
+        Text: "Thank you for your patience."
+        IconUrl: ""
+      Timestamp: true

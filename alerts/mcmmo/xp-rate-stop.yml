@@ -1,0 +1,44 @@
+# Alert-ID: mcmmo/xp-rate-stop
+# Description: Announces an mcMMO xprate reset or clear command from a player or console.
+# Plugin: mcMMO
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: verified
+# Authors: mrfloris
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20mcmmo%20xprate%20-%20xprate%20stop%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: 1.30.5
+# Verified-Paper: 26.2-120
+# Verified-Java: 25
+# Required-Plugin: mcMMO 2.2.049
+# Verified-Date: 2026-08-29
+
+Alerts:
+  - Trigger: /xprate
+    Async: false
+    Conditions:
+      - "#args.size() > 0"
+      - "#args.get(0).equalsIgnoreCase('reset') or #args.get(0).equalsIgnoreCase('clear')"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#000001"
+      Author:
+        ImageUrl: "{botavatarurl}"
+        Name: "mcMMO booster event"
+        Url: ""
+      Description: |
+        ```md
+        # Server boosters have ended
+        - mcMMO XP rate was reset.
+        ```
+        Reset by `${#sender.getName()}`.
+      Timestamp: true

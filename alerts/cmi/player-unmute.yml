@@ -1,0 +1,39 @@
+# Alert-ID: cmi/player-unmute
+# Description: Logs a CMI unmute command from a player or console.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: verified
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20unmute%20-%20user%20unmute%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: 1.30.5
+# Verified-Paper: 26.2-120
+# Verified-Java: 25
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: 2026-08-29
+
+Alerts:
+  - Trigger: [/unmute, /cmi]
+    Async: false
+    Conditions:
+      - "(#command.toLowerCase().startsWith('unmute ') and #args.size() > 0) or (#command.toLowerCase().startsWith('cmi unmute ') and #args.size() > 1)"
+    Channel: logs
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#93c47d"
+      Author:
+        ImageUrl: "{botavatarurl}"
+        Name: "Player unmuted"
+        Url: ""
+      Description: "`${#sender.getName()}` unmuted **${#command.toLowerCase().startsWith('cmi unmute ') ? #args.get(1) : #args.get(0)}**."
+      Timestamp: true

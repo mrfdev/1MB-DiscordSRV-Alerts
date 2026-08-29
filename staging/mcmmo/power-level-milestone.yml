@@ -1,0 +1,40 @@
+# Alert-ID: mcmmo/power-level-milestone
+# Description: Announces every 25th mcMMO skill level as a compact milestone.
+# Plugin: mcMMO
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Credit: PseudoPanda
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/_alert%20-%20mcmmo%20levelup%20-%20user%20level%20up%20event.yml
+# Origin-URL: https://discord.com/channels/135634590575493120/889139760067645460/889140521799417867
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: mcMMO 2.2.049
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: com.gmail.nossr50.events.experience.McMMOPlayerLevelUpEvent
+    Async: false
+    Conditions:
+      - "#event.getSkillLevel() % 25 == 0"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#869600"
+      ThumbnailUrl: "{embedavatarurl}"
+      Title:
+        Text: "{displayname} reached a mcMMO milestone"
+        Url: ""
+      Description: "**${#event.getSkill().toString()}** reached level **${#event.getSkillLevel()}**."
+      Timestamp: true

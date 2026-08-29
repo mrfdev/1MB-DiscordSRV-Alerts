@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1017" />
+    <meta
+      name="description"
+      content="Search tested DiscordSRV Alerts for modern Paper servers, including Alerts used and evaluated on 1MoreBlock.com."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="1MB DiscordSRV Alerts" />
+    <meta
+      property="og:description"
+      content="A searchable, credited, and tested collection of DiscordSRV Alerts for Paper 26.2+."
+    />
+    <meta
+      property="og:image"
+      content="https://mrfdev.github.io/1MB-DiscordSRV-Alerts/social-preview.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%230b1017'/%3E%3Cpath d='M12 16h40v32H12z' fill='%2382e862'/%3E%3Cpath d='M20 24h8v8h-8zm16 0h8v8h-8zM20 40h24v8H20z' fill='%230b1017'/%3E%3C/svg%3E"
+    />
+    <title>1MB DiscordSRV Alerts</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="1MB DiscordSRV Alerts home">
+        <span class="brand-mark" aria-hidden="true"><span>!</span></span>
+        <span>
+          <strong>1MB DiscordSRV Alerts</strong>
+          <small>Curated on 1MoreBlock.com</small>
+        </span>
+      </a>
+      <nav aria-label="Repository links">
+        <a href="https://github.com/mrfdev/1MB-DiscordSRV-Alerts">GitHub</a>
+        <a href="https://github.com/mrfdev/1MB-DiscordSRV-Alerts/issues">Issues</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="eyebrow">Paper 26.2+ · Java 25+ · DiscordSRV 1.30.5+</div>
+        <h1 id="page-title">Find an Alert. Know what it does.</h1>
+        <p>
+          Search verified DiscordSRV Alert Recipes by plugin, trigger, or destination. Every result keeps its credit,
+          source, tested runtime, and copy-ready YAML together.
+        </p>
+        <div class="release-line" id="release-line" aria-live="polite">Loading collection…</div>
+      </section>
+
+      <section class="catalog" aria-labelledby="catalog-title">
+        <h2 id="catalog-title" class="sr-only">Alert catalog</h2>
+        <div class="search-panel">
+          <label class="search-field" for="search-input">
+            <span>Search Recipes</span>
+            <span class="search-control">
+              <span aria-hidden="true">⌕</span>
+              <input
+                id="search-input"
+                type="search"
+                autocomplete="off"
+                placeholder="Try ‘staff message’, ‘CMI’, or an event class…"
+              />
+              <kbd>/</kbd>
+            </span>
+          </label>
+          <label for="plugin-filter">
+            <span>Plugin</span>
+            <select id="plugin-filter">
+              <option value="">All plugins</option>
+            </select>
+          </label>
+          <label for="channel-filter">
+            <span>Channel</span>
+            <select id="channel-filter">
+              <option value="">All channels</option>
+              <option value="global">global</option>
+              <option value="staff">staff</option>
+              <option value="logs">logs</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="catalog-meta">
+          <p id="result-count" aria-live="polite">Loading verified Recipes…</p>
+          <a href="https://github.com/mrfdev/1MB-DiscordSRV-Alerts/releases">Download complete collection</a>
+        </div>
+
+        <div class="catalog-layout">
+          <section class="results" aria-label="Alert Recipe results">
+            <div id="recipe-list" class="recipe-list"></div>
+            <div id="empty-state" class="empty-state" hidden>
+              <strong>No verified Recipes match.</strong>
+              <span>Try fewer words or clear a filter.</span>
+              <button type="button" id="clear-filters">Clear filters</button>
+            </div>
+          </section>
+
+          <aside id="recipe-detail" class="detail" aria-live="polite" aria-label="Selected Alert Recipe">
+            <div class="detail-placeholder">Choose a Recipe to inspect its trigger and YAML.</div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="principles" aria-label="Collection guarantees">
+        <article>
+          <span>01</span>
+          <h2>Verified, not guessed</h2>
+          <p>Only Recipes observed on the documented runtime appear in this catalog.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h2>Safe destinations</h2>
+          <p>Reusable files use logical <code>global</code>, <code>staff</code>, or <code>logs</code> channels.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h2>Credit travels with YAML</h2>
+          <p>Version, authors, contributors, and origin links remain inside every downloaded Recipe.</p>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built for the Minecraft server community by the 1MoreBlock.com maintainers.</p>
+      <a href="https://github.com/mrfdev/1MB-DiscordSRV-Alerts/blob/main/CONTRIBUTING.md">Contribute an Alert</a>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

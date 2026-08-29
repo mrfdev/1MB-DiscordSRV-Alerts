@@ -1,0 +1,737 @@
+# This is an /advanced/ feature of DiscordSRV that allows you to send messages to Discord when a game event happens
+# or when a command is run. You will need a working knowledge of how Bukkit events work and their properties.
+# If you aren't sure about what you're doing here, maybe ask a developer or join our support server @ discordsrv.com/discord
+# Made something you'd like to share? You can do so in our Discord server's #alerts forum (invite above)
+#
+# Refer to the Bukkit API javadoc to find events & properties to use:
+#  https://hub.spigotmc.org/javadocs/bukkit
+# Helpful resources for learning how to use SpEL:
+#  https://docs.spring.io/spring/docs/4.2.x/spring-framework-reference/html/expressions.html
+#  https://dzone.com/articles/learn-spring-expression-language-with-examples
+#
+# You can use the following placeholders:
+#  {tps} - server TPS
+#  {time} - formatted time
+#  {date} - formatted date
+#  {name} - if alert is for a player event, the name of the player
+#  {ping} - if alert is for a player event, the ping of the player
+#  {username} - if alert is for a player event, the username of the player
+#  {displayname} - if alert is for a player event, the display name of the player
+#  {usernamenoescapes} - if alert is for a player event, the username of the player without escaping discord format (for use in inline code & code block markdown)
+#  {displaynamenoescapes} - if alert is for a player event, the display name of the player without escaping discord format (for use in inline code & code block markdown)
+#  {world} - if alert is for a player event, the world the player is in
+#  {embedavatarurl} - if alert is for a player event, the avatar url for the player's head, otherwise, the bot's avatar url
+#  {botavatarurl} - the bot's avatar url
+#  {botname} - the bot's name
+#  %placeholder% - any PlaceholderAPI placeholders, can only use player ones when alert is for a player event
+#
+# You can also use SpEL expressions with ${expression...}, such as...
+#  - Getting a player's IP: ${#player.address.address.hostAddress}
+#  - Getting a player's game mode: ${#player.gameMode.name()}
+#  - Getting a player's linked Discord account ID: ${#discordsrv.accountLinkManager.getDiscordId(#player.uniqueId)}
+#  - Getting the online player count: ${#server.onlinePlayers.size()}
+#  - Getting the status of DiscordSRV's connection to Discord: ${#jda.status.name()}
+#  - Checking if a player is in a specific world: ${#player.world.name == 'world_the_end'}
+#  - Checking if it's day in the world that the player is in: ${#player.world.time > 0 && #player.world.time < 13000}
+#  You can use the following expression placeholders, as seen above:
+#   #plugins.<plugin> - the specified plugin instance, null if doesn't exist
+#   #event - the event that's triggering the alert if this alert is an event alert
+#   #server - the Bukkit API server instance, equivalent to Bukkit#getServer
+#   #discordsrv - the DiscordSRV plugin instance
+#   #player - the player that the event is for, if this is a player event or command
+#   #sender - the command sender, if this is a command alert
+#   #command - the full command, with no leading slash, if this is a command alert
+#   #args - the command arguments, if this is a command alert
+#   #allArgs - the command arguments as one string, if this is a command alert
+#   #channel - the destination channel for this alert
+#   #jda - DiscordSRV's JDA instance that it uses to communicate with Discord
+#
+# Syntax/defaults:
+#  - Trigger: <event name or /command>
+#    Async: true # optional, defaults to true, you should almost never have to change this
+#    Conditions:
+#      - property == < > <= >= value etc
+#    Channel: <discordsrv channel name>
+#    IgnoreCancelled: true # only for event alerts
+#    Content: ""
+#    Webhook:
+#      Enabled: false
+#      AvatarUrl: "{botavatarurl}"
+#      Name: "{botname}"
+#    Embed:
+#      Enabled: true
+#      Color: "#00ff00" # accepts a hex color code (eg. "#ffffff") or a rgb integer (eg. 0)
+#      Author:
+#        ImageUrl: "{embedavatarurl}"
+#        Name: "{username} did... something."
+#        Url: ""
+#      ThumbnailUrl: ""
+#      Title:
+#        Text: ""
+#        Url: ""
+#      Description: ""
+#      Fields: [] # format is "title;value;inline" (eg. "Who joined?;%displayname%;true") or "blank" to add a blank field
+#      ImageUrl: ""
+#      Footer:
+#        Text: ""
+#        IconUrl: ""
+#      Timestamp: false # set to true to use the time the message was sent or use a epoch timestamp for a specific time (https://www.epochconverter.com/)
+#
+Alerts: 
+  # Example config to send messages to the "fish" DiscordSRV channel when a player successfully catches a fish
+  #- Trigger: PlayerFishEvent
+  #  Channel: fish
+  #  Conditions:
+  #    - state.name() == 'CAUGHT_FISH'
+  #  Embed:
+  #    Color: "#00ff00"
+  #    Author:
+  #      ImageUrl: "{embedavatarurl}"
+  #      Name: "{name} caught a ${caught.itemStack.type.name()}!"
+
+  # Example config to send Matrix anti-cheat messages
+  #- Trigger: PlayerViolationEvent
+  #  Channel: matrix
+  #  Conditions:
+  #    - violations >= 5 # don't send events for players with < 5 violations
+  #  Embed:
+  #    Color: "#ff0000"
+  #    Author:
+  #      ImageUrl: "{embedavatarurl}"
+  #      Name: "{username} failed ${hackType.name().toLowerCase()} check | ${component} | vl:${violations} ping:${player.handle.ping} tps:{tps}"
+
+  # Example config to send /gamemode messages
+  #- Trigger: /gamemode
+  #  Channel: gamemode
+  #  Conditions:
+  #    - '#player.hasPermission("minecraft.command.gamemode") == true'
+  #  Embed:
+  #    Color: "#ff0000"
+  #    Author:
+  #      ImageUrl: "{embedavatarurl}"
+  #      Name: "{username} changed gamemode to ${#args.get(0)}"
+
+  # Example config to send /me commands
+  #- Trigger: /me
+  #  Channel: me
+  #  Conditions:
+  #    - '#player.hasPermission("minecraft.command.me") == true || #player.hasPermission("essentials.me") == true'
+  #  Embed:
+  #    Color: "#00ff00"
+  #    Author:
+  #      ImageUrl: "{embedavatarurl}"
+  #      Name: "* {username} ${#allArgs}"
+
+  - Trigger: 'org.bukkit.event.block.SignChangeEvent'
+    Channel: '1396738538229469184'
+    Conditions:
+      - "#event.getLine(0).isEmpty() == false || #event.getLine(1).isEmpty() == false || #event.getLine(2).isEmpty() == false || #event.getLine(3).isEmpty() == false"
+    Embed:
+      Color: '#000001'
+      ThumbnailUrl: "https://mineskin.eu/avatar/${#event.getPlayer().getName()}"
+      Title:
+        Text: "🪧 SPY: SIGN PLACED"
+      Description: |
+        Placed by `${#event.getPlayer().getName()}` : `/tppos ${#event.getBlock().getLocation().getBlockX()} ${#event.getBlock().getLocation().getBlockY()} ${#event.getBlock().getLocation().getBlockZ()} {world}`
+        ```
+        ${#event.getLine(0)}
+        ${#event.getLine(1)}
+        ${#event.getLine(2)}
+        ${#event.getLine(3)}
+        ```
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: spydog
+    Conditions:
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - '(#args.size() > 1)'
+      - "(#command.split(\"\\s+|$\")[1].equals(\"msg\"))"
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**MSG SPY**'
+      Description: "Message by `{username}`, Location: `/tppos %player_x% %player_y% %player_z% {world}` \n ```\n/${#command}```"
+  - Trigger: [/w, /tell]
+    Channel: spydog
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**MSG SPY**'
+      Description: "Whisper by `{username}`, Location: `/tppos %player_x% %player_y% %player_z% #{world}` \n ```\n/${#command}```"
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: global
+    Conditions:
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - '(#args.size() > 1)'
+      - "(#command.split(\"\\s+|$\")[1].equals(\"broadcast\"))"
+      - '#player.hasPermission("cmi.command.broadcast") == true'
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**BROADCAST**'
+      Description: "`{username} posted:`\n```md\n# ${#allArgs}\n```"
+  - Trigger: [/xprate]
+    Channel: global
+    Conditions:
+      - "!(#command.split(\"\\s+|$\")[1].equals(\"reset\"))"
+      - "!(#command.split(\"\\s+|$\")[1].equals(\"clear\"))"
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**BOOSTER EVENT**'
+      Description: "```md\n# Server Boosters have been turned on!\n- mcMMO XP Rate is set to: ${#args.get(0)}x\n```\nCommands: `/mctop, /mcrank, /mctop`"
+  - Trigger: [/xprate]
+    Channel: global
+    Conditions:
+      - "(#command.split(\"\\s+|$\")[1].equals(\"reset\"))"
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**BOOSTER EVENT**'
+      Description: "```md\n# Server Boosters have ended!\n- mcMMO XP Rate has been reset.\n```"
+  - Trigger: [/xprate]
+    Channel: global
+    Conditions:
+      - "(#command.split(\"\\s+|$\")[1].equals(\"clear\"))"
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**BOOSTER EVENT**'
+      Description: "```md\n# Server Boosters have ended!\n- mcMMO XP Rate has been reset.\n```"
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: '1305599210141253633'
+    Conditions:
+      - '#player.hasPermission("cmi.command.ban")'
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - '(#args.size() > 1)'
+      - "(#command.split(\"\\s+|$\")[1].equals(\"ban\"))"
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**PLAYER BANNED**'
+      Description: "`{username}` has banned `${#args.get(1)}`\n```\n/${#command}```"
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: '1305599210141253633'
+    Conditions:
+      - '#player.hasPermission("cmi.command.unban")'
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - '(#args.size() > 1)'
+      - "(#command.split(\"\\s+|$\")[1].equals(\"unban\"))"
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**PLAYER UN-BANNED**'
+      Description: "`{username}` has removed the ban on `${#args.get(1)}`\n```\n/${#command}```"
+  - Trigger: [/ban, /unban]
+    Channel: '1305599210141253633'
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '**DEBUG**'
+      Description: "`${#args.get(0)}` by `{username}` on `${#args.get(1)}`\n```\n/${#command}```"
+  - Trigger: com.gmail.nossr50.events.experience.McMMOPlayerLevelUpEvent
+    Channel: global
+    Conditions:
+      - "(T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_power_level%'))) % 25 == 0"
+    Webhook:
+      Enable: true
+      AvatarUrl: 'https://omgboards.com/media/1MB-mcMMO-logo.png'
+      Name: 'mcMMO'
+    Embed:
+      Color: '#869600'
+      ThumbnailUrl: '{embedavatarurl}'
+      Title:
+        Text: '{displayname} made it to power-level `%mcmmo_power_level%`'
+        Url: 'https://omgboards.com/threads/260970/'
+      Description: |
+        **Top Skills**
+        ${T(java.lang.String).join(' | ', T(java.util.Arrays).asList(T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_excavation%'))).substring(1) + '|:mcmmoexcavation: Excavation `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_excavation%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_fishing%'))).substring(1) + '|:mcmmofishing: Fishing `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_fishing%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_herbalism%'))).substring(1) + '|:mcmmoherbalism: Herbalism `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_herbalism%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_mining%'))).substring(1) + '|:mcmmomining: Mining `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_mining%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_woodcutting%'))).substring(1) + '|:mcmmowoodcutting: Woodcutting `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_woodcutting%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_archery%'))).substring(1) + '|:mcmmoarchery: Archery `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_archery%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_axes%'))).substring(1) + '|:mcmmoaxes: Axes `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_axes%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_crossbows%'))).substring(1) + '|:mcmmocrossbows: Crossbows `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_crossbows%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_maces%'))).substring(1) + '|:mcmmomaces: Maces `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_maces%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_swords%'))).substring(1) + '|:mcmmoswords: Swords `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_swords%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_spears%'))).substring(1) + '|:mcmmospears: Spears `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_spears%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_taming%'))).substring(1) + '|:mcmmotaming: Taming `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_taming%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_tridents%'))).substring(1) + '|:mcmmotridents: Tridents `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_tridents%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_unarmed%'))).substring(1) + '|:mcmmounarmed: Unarmed `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_unarmed%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_acrobatics%'))).substring(1) + '|:mcmmoacrobatics: Acrobatics `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_acrobatics%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_alchemy%'))).substring(1) + '|:mcmmoalchemy: Alchemy `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_alchemy%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_repair%'))).substring(1) + '|:mcmmorepair: Repair `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_repair%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_salvage%'))).substring(1) + '|:mcmmosalvage: Salvage `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_salvage%') + '`', T(java.lang.String).valueOf(1000000 + T(java.lang.Integer).parseInt(Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_smelting%'))).substring(1) + '|:mcmmosmelting: Smelting `' + Class.forName('me.clip.placeholderapi.PlaceholderAPI').setPlaceholders(#event.getPlayer(), '%mcmmo_level_smelting%') + '`').stream().sorted(T(java.util.Comparator).reverseOrder()).limit(3).collect(T(java.util.stream.Collectors).toList())).replaceAll('[0-9][0-9][0-9][0-9][0-9][0-9][|]', '')}
+
+        **Full Profile**
+        Gathering: :mcmmomining: %mcmmo_level_mining% · :mcmmoexcavation: %mcmmo_level_excavation% · :mcmmofishing: %mcmmo_level_fishing% · :mcmmoherbalism: %mcmmo_level_herbalism% · :mcmmowoodcutting: %mcmmo_level_woodcutting%
+        Utility: :mcmmosmelting: %mcmmo_level_smelting% · :mcmmoacrobatics: %mcmmo_level_acrobatics% · :mcmmosalvage: %mcmmo_level_salvage% · :mcmmorepair: %mcmmo_level_repair% · :mcmmoalchemy: %mcmmo_level_alchemy%
+        Combat: :mcmmoswords: %mcmmo_level_swords% · :mcmmoarchery: %mcmmo_level_archery% · :mcmmotaming: %mcmmo_level_taming% · :mcmmoaxes: %mcmmo_level_axes% · :mcmmounarmed: %mcmmo_level_unarmed% · :mcmmotridents: %mcmmo_level_tridents% · :mcmmocrossbows: %mcmmo_level_crossbows% · :mcmmomaces: %mcmmo_level_maces% · :mcmmospears: %mcmmo_level_spears%
+
+        -# Progress: /mcstats · /mcrank · /mctop · /mcstats discord
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: '1182983665412755507'
+    Conditions:
+      - '#player.hasPermission("cmi.command.staffmsg") == true'
+      - '#command.toLowerCase().startsWith("cmi staffmsg ") or #command.toLowerCase().startsWith("staffmsg ") or #command.toLowerCase().startsWith("s ")'
+      - '!#command.toLowerCase().equals("s on")'
+      - '!#command.toLowerCase().startsWith("s on ")'
+      - '!#command.toLowerCase().equals("s off")'
+      - '!#command.toLowerCase().startsWith("s off ")'
+      - '!#command.toLowerCase().equals("s toggle")'
+      - '!#command.toLowerCase().startsWith("s toggle ")'
+      - '!#command.toLowerCase().equals("s recent")'
+      - '!#command.toLowerCase().startsWith("s recent ")'
+      - '!#command.toLowerCase().equals("s help")'
+      - '!#command.toLowerCase().startsWith("s help ")'
+      - '!#command.toLowerCase().equals("s status")'
+      - '!#command.toLowerCase().startsWith("s status ")'
+      - '!#command.toLowerCase().equals("s reload")'
+      - '!#command.toLowerCase().startsWith("s reload ")'
+      - '!#command.toLowerCase().equals("s debug")'
+      - '!#command.toLowerCase().startsWith("s debug ")'
+      - '!#command.toLowerCase().equals("s info")'
+      - '!#command.toLowerCase().startsWith("s info ")'
+      - '!#command.toLowerCase().equals("s clear")'
+      - '!#command.toLowerCase().startsWith("s clear ")'
+      - '!#command.toLowerCase().equals("staffmsg on")'
+      - '!#command.toLowerCase().startsWith("staffmsg on ")'
+      - '!#command.toLowerCase().equals("staffmsg off")'
+      - '!#command.toLowerCase().startsWith("staffmsg off ")'
+      - '!#command.toLowerCase().equals("staffmsg toggle")'
+      - '!#command.toLowerCase().startsWith("staffmsg toggle ")'
+      - '!#command.toLowerCase().equals("staffmsg recent")'
+      - '!#command.toLowerCase().startsWith("staffmsg recent ")'
+      - '!#command.toLowerCase().equals("staffmsg help")'
+      - '!#command.toLowerCase().startsWith("staffmsg help ")'
+      - '!#command.toLowerCase().equals("staffmsg status")'
+      - '!#command.toLowerCase().startsWith("staffmsg status ")'
+      - '!#command.toLowerCase().equals("staffmsg reload")'
+      - '!#command.toLowerCase().startsWith("staffmsg reload ")'
+      - '!#command.toLowerCase().equals("staffmsg debug")'
+      - '!#command.toLowerCase().startsWith("staffmsg debug ")'
+      - '!#command.toLowerCase().equals("staffmsg info")'
+      - '!#command.toLowerCase().startsWith("staffmsg info ")'
+      - '!#command.toLowerCase().equals("staffmsg clear")'
+      - '!#command.toLowerCase().startsWith("staffmsg clear ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg on")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg on ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg off")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg off ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg toggle")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg toggle ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg recent")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg recent ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg help")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg help ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg status")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg status ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg reload")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg reload ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg debug")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg debug ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg info")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg info ")'
+      - '!#command.toLowerCase().equals("cmi staffmsg clear")'
+      - '!#command.toLowerCase().startsWith("cmi staffmsg clear ")'
+    Embed:
+      Color: "#00ff00"
+      ThumbnailUrl: "https://mineskin.eu/avatar/{username}"
+      Title:
+        Text: "🔍 /cmi staffmsg"
+      Description: |
+        `{username}` said: ```${#allArgs.substring(#allArgs.indexOf(' ') + 1)}```
+      Timestamp: true
+  - Trigger: org.bukkit.event.server.ServerCommandEvent
+    Channel: '1182983665412755507'
+    Conditions:
+      - '#command.toLowerCase().startsWith("cmi staffmsg ")'
+      - '!(#command.toLowerCase().equals("cmi staffmsg on") or #command.toLowerCase().startsWith("cmi staffmsg on ") or #command.toLowerCase().equals("cmi staffmsg off") or #command.toLowerCase().startsWith("cmi staffmsg off ") or #command.toLowerCase().equals("cmi staffmsg toggle") or #command.toLowerCase().startsWith("cmi staffmsg toggle ") or #command.toLowerCase().equals("cmi staffmsg recent") or #command.toLowerCase().startsWith("cmi staffmsg recent ") or #command.toLowerCase().equals("cmi staffmsg help") or #command.toLowerCase().startsWith("cmi staffmsg help ") or #command.toLowerCase().equals("cmi staffmsg status") or #command.toLowerCase().startsWith("cmi staffmsg status ") or #command.toLowerCase().equals("cmi staffmsg reload") or #command.toLowerCase().startsWith("cmi staffmsg reload ") or #command.toLowerCase().equals("cmi staffmsg debug") or #command.toLowerCase().startsWith("cmi staffmsg debug ") or #command.toLowerCase().equals("cmi staffmsg info") or #command.toLowerCase().startsWith("cmi staffmsg info ") or #command.toLowerCase().equals("cmi staffmsg clear") or #command.toLowerCase().startsWith("cmi staffmsg clear "))'
+    Embed:
+      Color: "#00ff00"
+      ThumbnailUrl: "https://mineskin.eu/avatar/server"
+      Title:
+        Text: "🔍 staffmsg (console)"
+      Description: |
+        `Console` said: ```${#command.substring(13)}```
+      Timestamp: true
+  - Trigger: org.bukkit.event.server.ServerCommandEvent
+    Channel: '1182983665412755507'
+    Conditions:
+      - '#command.toLowerCase().startsWith("staffmsg ")'
+      - '!(#command.toLowerCase().equals("staffmsg on") or #command.toLowerCase().startsWith("staffmsg on ") or #command.toLowerCase().equals("staffmsg off") or #command.toLowerCase().startsWith("staffmsg off ") or #command.toLowerCase().equals("staffmsg toggle") or #command.toLowerCase().startsWith("staffmsg toggle ") or #command.toLowerCase().equals("staffmsg recent") or #command.toLowerCase().startsWith("staffmsg recent ") or #command.toLowerCase().equals("staffmsg help") or #command.toLowerCase().startsWith("staffmsg help ") or #command.toLowerCase().equals("staffmsg status") or #command.toLowerCase().startsWith("staffmsg status ") or #command.toLowerCase().equals("staffmsg reload") or #command.toLowerCase().startsWith("staffmsg reload ") or #command.toLowerCase().equals("staffmsg debug") or #command.toLowerCase().startsWith("staffmsg debug ") or #command.toLowerCase().equals("staffmsg info") or #command.toLowerCase().startsWith("staffmsg info ") or #command.toLowerCase().equals("staffmsg clear") or #command.toLowerCase().startsWith("staffmsg clear "))'
+    Embed:
+      Color: "#00ff00"
+      ThumbnailUrl: "https://mineskin.eu/avatar/server"
+      Title:
+        Text: "🔍 staffmsg (console)"
+      Description: |
+        `Console` said: ```${#command.substring(9)}```
+      Timestamp: true
+  - Trigger: org.bukkit.event.server.ServerCommandEvent
+    Channel: '1182983665412755507'
+    Conditions:
+      - '#command.toLowerCase().startsWith("s ")'
+      - '!(#command.toLowerCase().equals("s on") or #command.toLowerCase().startsWith("s on ") or #command.toLowerCase().equals("s off") or #command.toLowerCase().startsWith("s off ") or #command.toLowerCase().equals("s toggle") or #command.toLowerCase().startsWith("s toggle ") or #command.toLowerCase().equals("s recent") or #command.toLowerCase().startsWith("s recent ") or #command.toLowerCase().equals("s help") or #command.toLowerCase().startsWith("s help ") or #command.toLowerCase().equals("s status") or #command.toLowerCase().startsWith("s status ") or #command.toLowerCase().equals("s reload") or #command.toLowerCase().startsWith("s reload ") or #command.toLowerCase().equals("s debug") or #command.toLowerCase().startsWith("s debug ") or #command.toLowerCase().equals("s info") or #command.toLowerCase().startsWith("s info ") or #command.toLowerCase().equals("s clear") or #command.toLowerCase().startsWith("s clear "))'
+    Embed:
+      Color: "#00ff00"
+      ThumbnailUrl: "https://mineskin.eu/avatar/server"
+      Title:
+        Text: "🔍 staffmsg (console)"
+      Description: |
+        `Console` said: ```${#command.substring(2)}```
+      Timestamp: true
+  # - Trigger: PlayerCommandPreprocessEvent
+  #   Channel: '807177293943275530'
+  #   Conditions:
+  #     - '#player.hasPermission("cmi.command.info")'
+  #     - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+  #     - "(#command.split(\"\\s+|$\")[1].equals(\"info\"))"
+  #   Embed:
+  #     Color: "#000001"
+  #     Author:
+  #       ImageUrl: "{embedavatarurl}"
+  #       Name: '{username} used /info on ${#args.get(1)}:'
+  #     Title:
+  #       Text: "title Debug Information:"
+  #       Url: ""
+  #     Fields:
+  #       - "debug1;something;true"
+  #       - "debug 2;something else;false"
+  #       - "debug three;more things;true"
+  #       - "d5;stuff;true"
+  #       - "d six;more stuff;true"
+  #     Description: "`${#allArgs}`"
+  #     Footer:
+  #       Text: "Command: `/${#command}`"
+  - Trigger: 'org.bukkit.event.player.PlayerEditBookEvent'
+    Channel: '1397140960902647879'
+    Embed:
+      Color: '#D89869'
+      ThumbnailUrl: "https://mineskin.eu/avatar/${#event.getPlayer().getName()}"
+      Title:
+        Text: '📖 SPY: BOOK ${#event.isSigning() ? "SIGNED" : "EDITED"}'
+      Description: |
+        `${#event.getPlayer().getName()}` ${#event.isSigning() ? "**SIGNED a Book**" : "edited a book"}
+        **Title:** `${#event.getNewBookMeta().getTitle() ?: "Untitled (unsngned)"}`
+        **Author:** `${#event.getNewBookMeta().getAuthor() ?: "Unknown (unsigned)"}`
+        **Coord:** `/tppos ${#player.getLocation().getBlockX()} ${#player.getLocation().getBlockY()} ${#player.getLocation().getBlockZ()} ${#player.getWorld().getName()}`
+        ```
+        ${T(java.lang.String).join(' ``` ```', #event.getNewBookMeta().getPages())}
+        ```
+      Timestamp: true
+
+  - Trigger: github.scarsz.discordsrv.api.events.AccountLinkedEvent
+    Channel: global
+    Embed:
+      Color: '#2496f8'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '{username}'
+      Description: |
+        Discord account: <@${#discordsrv.accountLinkManager.getDiscordId(player.uniqueId)}>
+      Timestamp: true
+  - Trigger: com.Zrips.CMI.events.CMIAfkEnterEvent
+    Async: false
+    Conditions:
+      - '!T(java.lang.Class).forName("com.Zrips.CMI.Containers.CMIUser").getUser(#player).isVanished() == true'
+    Channel: global
+    Embed:
+      Color: '#869600'
+      ThumbnailUrl: '{embedavatarurl}'
+      Title:
+        Text: "{displayname} has ${#event.getType().toString() == 'manual' ? 'manually' : 'automatically'} gone idle."
+        Url: ''
+      Fields:
+        - 'AFK reason:;%cmi_user_afk_msg%;true'
+        - 'World:;`%cmi_player_world%`;true'
+  - Trigger: com.Zrips.CMI.events.CMIAfkLeaveEvent
+    Async: false
+    Conditions:
+      - '!T(java.lang.Class).forName("com.Zrips.CMI.Containers.CMIUser").getUser(#player).isVanished() == true'
+    Channel: global
+    Embed:
+      Color: '#869600'
+      ThumbnailUrl: '{embedavatarurl}'
+      Title:
+        Text: '{displayname} has returned after %cmi_user_afk_for%.'
+        Url: ''
+      Fields:
+        - 'AFK reason:;%cmi_user_afk_msg%;true'
+        - 'World:;`%cmi_player_world%`;true'
+  # Global channel: player-join event (without ip, etc)
+  - Trigger: org.bukkit.event.player.PlayerJoinEvent
+    Channel: global
+    Conditions:
+      - '!#player.hasPermission("discordsrv.silentjoin")'
+    Embed:
+      Color: '#869600'
+      ThumbnailUrl: '{embedavatarurl}'
+      Title:
+        Text: '{username} has joined the server'
+        Url: ''
+      Fields:
+        - 'World:;`{world}`;true'
+        - 'Gamemode:;`${#player.gameMode.name().toLowerCase()}`;true'
+        - "Discord:;${#discordsrv.accountLinkManager.getDiscordId(#player.uniqueId) == null ? 'None' : '<@'+#discordsrv.accountLinkManager.getDiscordId(#player.uniqueId)+'>'};true"
+      Footer:
+        Text: 'Total players online: ${#server.onlinePlayers.size()}'
+
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: global
+    Conditions:
+      - '#player.hasPermission("cmi.command.maintenance")'
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - '(#args.size() > 1)'
+      - "(#command.split(\"\\s+|$\")[1].equals(\"maintenance\"))"
+      - "(#command.split(\"\\s+|$\")[2].equals(\"true\"))"
+    Embed:
+      Color: '#869600'
+      ThumbnailUrl: 'https://cdn.discordapp.com/attachments/895784266976329739/979217380431507516/road-works.png'
+      Title:
+        Text: 'The Server is now in Maintenance Mode'
+        Url: ''
+      Description: '_We are oiling up the gears so the server runs a bit smoother_'
+      Fields:
+        - 'Reason:;%cmi_maintenance_message%;false'
+        - 'Please note;Players cannot join during this time;false'
+      Footer:
+        Text: 'Thank you for your patience, we will be back soon.'
+
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: global
+    Conditions:
+      - '#player.hasPermission("cmi.command.maintenance")'
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - '(#args.size() > 1)'
+      - "(#command.split(\"\\s+|$\")[1].equals(\"maintenance\"))"
+      - "!(#command.split(\"\\s+|$\")[2].equals(\"true\"))"
+    Embed:
+      Color: '#869600'
+      ThumbnailUrl: 'https://cdn.discordapp.com/attachments/895784266976329739/979217380431507516/road-works.png'
+      Title:
+        Text: 'Maintenance has Completed!'
+        Url: ''
+      Description: 'Sorry that it took a minute. But the server is open now.'
+      Fields:
+        - 'We are back from:;%cmi_maintenance_message%;false'
+        - 'Are you the first?;Players can join again!;false'
+
+  # CMI CMIEventCommandEvent
+  # - Trigger: CMIEventCommandEvent
+  #   Channel: '952183639255441468'
+  #   Embed:
+  #     Color: "#869600"
+  #     ThumbnailUrl: "{embedavatarurl}"
+  #     Title:
+  #       Text: "${#event.getHandlers()}"
+  #       Url: ""
+  #     Fields:
+  #       - "getAction:;${#event.getAction()};true"
+  #       - "getCommands:;${#event.getCommands()};true"
+  #       - "getSource;${#event.getSource()};true"
+
+  - Trigger: org.bukkit.event.player.PlayerKickEvent
+    Channel: '1305599210141253633'
+    Conditions:
+      - '!#event.getPlayer().isBanned()'
+    Embed:
+      Color: '#ff0000'
+      Author:
+        ImageUrl: '{embedavatarurl}'
+        Name: '🥾 %cmi_user_nameplate_prefix% ${#event.getPlayer().getDisplayName()}'
+      Description: '**Kick reason:** ${#event.getReason()}'
+
+  # 1MoreBlock.com PlayerShopGUI+ alert Version 0.3.1, build 038 - /ah sell (public put on market) logging
+  - Trigger: net.brcdev.playershopgui.event.CreateItemLotEvent
+    Channel: global
+    Embed:
+      Color: '#000001'
+      ThumbnailUrl: "https://mineskin.eu/avatar/${#event.getPlayer().getName()}"
+      Author:
+        ImageUrl: 'https://omgboards.com/dmrkt.png'
+        Name: '1MB Global /market'
+      Description: "Player `${#event.getPlayer().getName()}` put an item up for sale:\n### `${#event.getQuantity()}`x `${(#event.getItemStack().getItemMeta().displayName() == null) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) : ((T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).length() > 25) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).substring(0, 23) + '...' : T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName())) + ' (' + T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) + ')'}` for $`${#event.getPrice()}`."
+
+  # 1MoreBlock.com PlayerShopGUI+ alert Version 0.3.1, build 038 - /ah (public buy from market) logging
+  - Trigger: net.brcdev.playershopgui.event.PurchaseItemLotEvent
+    Channel: global
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: 'https://omgboards.com/dmrkt.png'
+        Name: '1MB Global /market'
+      Description: "Player **`${#event.getBuyer().getName()}`** bought `${#event.getQuantity()}`x `${(#event.getItemStack().getItemMeta().displayName() == null) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) : ((T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).length() > 25) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).substring(0, 23) + '...' : T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName())) + ' (' + T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) + ')'}` from `${#event.getSeller().getName()}` for $`${#event.getShopItem().getPrice()}`."
+
+  # 1MoreBlock.com PlayerShopGUI+ Version 0.3.1, build 038 - internal /ah sell logging
+  - Trigger: net.brcdev.playershopgui.event.CreateItemLotEvent
+    Channel: '1393795584217059370'
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: 'https://omgboards.com/dmrkt.png'
+        Name: '1MB Global /market - (/ah sell ..)'
+      Description: |
+        ```
+        ${#event.getPlayer().getName()} put an item up for sale: 
+        ${#event.getQuantity()}x ${(#event.getItemStack().getItemMeta().displayName() == null) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) : ((T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).length() > 25) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).substring(0, 23) + '...' : T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName())) + ' (' + T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) + ')'} for $${#event.getPrice()}
+        ```
+        `/tppos ${#event.getPlayer().getLocation().getBlockX()} ${#event.getPlayer().getLocation().getBlockY()} ${#event.getPlayer().getLocation().getBlockZ()} ${#event.getPlayer().getLocation().getWorld().getName()}`
+      Timestamp: true
+
+  # 1MoreBlock.com PlayerShopGUI+ alert Version 0.3.1, build 038 - internal /ah buy logging
+  - Trigger: net.brcdev.playershopgui.event.PurchaseItemLotEvent
+    Channel: '1393795584217059370'
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: 'https://omgboards.com/dmrkt.png'
+        Name: '1MB Global /market - BOUGHT'
+      Description: |
+        ```
+        ${#event.getBuyer().getName()} bought from /ah:
+        ${#event.getQuantity()}x ${(#event.getItemStack().getItemMeta().displayName() == null) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) : ((T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).length() > 25) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName()).substring(0, 23) + '...' : T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getItemStack().getItemMeta().displayName())) + ' (' + T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getItemStack().translationKey())) + ')'}
+        from ${#event.getSeller().getName()} for $${#event.getShopItem().getPrice()}
+        ```
+        `/tppos ${#event.getBuyer().getLocation().getBlockX()} ${#event.getBuyer().getLocation().getBlockY()} ${#event.getBuyer().getLocation().getBlockZ()} ${#event.getBuyer().getLocation().getWorld().getName()}`
+      Timestamp: true
+
+  # 1MoreBlock.com ShopGUI+ alert Version 0.3.1, build 039 - /shopgui (private buy) logging -by mrfloris with some great help/contributions from Mackenzie and the456gamer
+  # published here: https://discord.com/channels/135634590575493120/1139010819905048679
+  - Trigger: net.brcdev.shopgui.event.ShopPostTransactionEvent
+    Channel: '1393795584217059370'
+    Embed:
+      Color: '#000001'
+      Author:
+        ImageUrl: 'https://omgboards.com/dmrkt.png'
+        Name: '/shopgui debug: ${#event.getResult().getResult().name()}'
+      Description: |
+        ```
+        ${#event.getResult().getPlayer().getName()} ${(#event.getResult().getShopAction().name().startsWith('SELL')) ? 'sold' : 'bought'} ${#event.getResult().getAmount()}x ${(#event.getResult().getShopItem().getItem().getItemMeta().displayName() == null) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getResult().getShopItem().getItem().translationKey())) : ((T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getResult().getShopItem().getItem().getItemMeta().displayName()).length() > 25) ? T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getResult().getShopItem().getItem().getItemMeta().displayName()).substring(0, 23) + '...' : T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).plainText().serialize(#event.getResult().getShopItem().getItem().getItemMeta().displayName())) + ' (' + T(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer).builder().flattener(T(io.papermc.paper.text.PaperComponents).flattener()).build().serialize(T(net.kyori.adventure.text.Component).translatable(#event.getResult().getShopItem().getItem().translationKey())) + ')'} for $${#event.getResult().getPrice()}
+        ```
+        `/tppos ${#event.getResult().getPlayer().getLocation().getBlockX()} ${#event.getResult().getPlayer().getLocation().getBlockY()} ${#event.getResult().getPlayer().getLocation().getBlockZ()} ${#event.getResult().getPlayer().getLocation().getWorld().getName()}`
+      Timestamp: true
+
+  # 1MoreBlock.com CMI /nick change alert version 0.2.5 build 021
+  # credits: mrfloris with some great help from DiscordSRV community members
+  # published here:
+  - Trigger: com.Zrips.CMI.events.CMIPlayerNickNameChangeEvent
+    Channel: global
+    Embed:
+      Color: '#ff0000'
+      Author:
+        ImageUrl: 'https://crafatar.com/avatars/${#event.getUser().getPlayer().getUniqueId()}?overlay'
+        Name: '/nick'
+      Description: 'Player **`${#event.getUser().getPlayer().getName()}`** has changed their name to: `${#event.getNickName()}`'
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: '1305599210141253633'
+    Conditions:
+      - '#player.hasPermission("cmi.command.jail")'
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - "(#args.size() > 1)"
+      - "(#command.split(\"\\s+|$\")[1].equals(\"jail\"))"
+    Embed:
+      Color: "#ff0000"
+      Title:
+         Text: "JAILED"
+      Description: "**Punishment Type**: jailed \n **Player**: `${#args.get(1)}` \n **staff**:`{username}` \n **Duration**: `${#args.get(2)}` \n **Jail-No**: `${#args.get(4)}` \n **Reason**: `${#args.get(6)}` `${#args.get(7)}` "
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Channel: '1305599210141253633'
+    Conditions:
+      - '#player.hasPermission("cmi.command.unjail")'
+      - "(#command.split(\"\\s+|$\")[0].equals(\"cmi\"))"
+      - "(#args.size() > 1)"
+      - "(#command.split(\"\\s+|$\")[1].equals(\"unjail\"))"
+    Embed:
+      Color: "#ff0000"
+      Title:
+         Text: "UNJAILED"
+      Description: "**Punishment Type**: unjailed \n **Player**: `${#args.get(1)}` \n **staff**:`{username}` "
+
+  - Trigger: 'org.bukkit.event.player.PlayerJoinEvent'
+    Channel: '1396763019069096046'
+    Embed:
+      Color: "#00ff00"
+      ThumbnailUrl: "https://mineskin.eu/avatar/{username}"
+      Title:
+        Text: ":arrow_right: ${!#player.hasPlayedBefore() ? 'a NEW Player has joined the server for the first time' : 'a Player has rejoined the server'}"
+      Fields:
+        - 'Realname:;[`${#player.getName()}`](https://namemc.com/profile/${#player.getUniqueId()});true'
+        - 'Nickname:;`${Class.forName("me.clip.placeholderapi.PlaceholderAPI").setPlaceholders(#player, "%cmi_user_nickname%")}`;true'
+        - 'IP:;[`${#player.getAddress().getAddress().getHostAddress()}`](https://www.ip2location.com/demo/${#player.getAddress().getAddress().getHostAddress()});true'
+        - 'UUID:;```${#player.getUniqueId()}```;false'
+        - 'Location:;```/cmi tppos ${#player.getLocation().getBlockX()} ${#player.getLocation().getBlockY()} ${#player.getLocation().getBlockZ()} ${#player.getWorld().getName()}```;false'
+        - 'Gamemode:;`${#player.getGameMode().name().toLowerCase()}`;true'
+        - "Discord:;${#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId()) == null ? 'Not linked' : '<@'+#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId())+'>'};true"
+        - 'Mod Cmds:;
+          ```/cmi kick ${#player.getName()} please play within the /rules -s```
+          ```/cmi ban ${#player.getName()} not welcome - perm ban - appeal not possible -s```
+          ```/cmi ban ${#player.getName()} rule broken - appeal on discord via a new ticket https://discord.gg/floris -s```
+          ```/cmi ban ${#player.getName()} inappropriate username, change it and appeal via a ticket to rejoin https://discord.gg/floris -s```
+          ;false'
+      Footer:
+        Text: 'Total players online: ${#server.getOnlinePlayers().size()}'
+
+  - Trigger: 'org.bukkit.event.player.PlayerJoinEvent'
+    Channel: '1396768167002509322'
+    Embed:
+      Color: "#00ff00"
+      ThumbnailUrl: "https://mineskin.eu/avatar/{username}"
+      Title:
+        Text: ":arrow_right: ${!#player.hasPlayedBefore() ? 'a NEW Player has joined the server for the first time' : 'a Player has rejoined the server'}"
+      Fields:
+        - 'Realname:;[`${#player.getName()}`](https://namemc.com/profile/${#player.getUniqueId()});true'
+        - 'Nickname:;`${Class.forName("me.clip.placeholderapi.PlaceholderAPI").setPlaceholders(#player, "%cmi_user_nickname%")}`;true'
+        - 'UUID:;```${#player.getUniqueId()}```;false'
+        - 'Location:;```/cmi tppos ${#player.getLocation().getBlockX()} ${#player.getLocation().getBlockY()} ${#player.getLocation().getBlockZ()} ${#player.getWorld().getName()}```;false'
+        - 'Gamemode:;`${#player.getGameMode().name().toLowerCase()}`;true'
+        - "Discord:;${#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId()) == null ? 'Not linked' : '<@'+#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId())+'>'};true"
+        - 'Mod Cmds:;
+          ```/cmi kick ${#player.getName()} please play within the /rules -s```
+          ```/cmi ban ${#player.getName()} not welcome - perm ban - appeal not possible -s```
+          ```/cmi ban ${#player.getName()} rule broken - appeal on discord via a new ticket https://discord.gg/floris -s```
+          ```/cmi ban ${#player.getName()} inappropriate username, change it and appeal via a ticket to rejoin https://discord.gg/floris -s```
+          ;false'
+      Footer:
+        Text: 'Total players online: ${#server.getOnlinePlayers().size()}'
+
+  - Trigger: 'org.bukkit.event.player.PlayerQuitEvent'
+    Channel: '1396763019069096046'
+    Embed:
+      Color: "#ff4444"
+      ThumbnailUrl: "https://mineskin.eu/avatar/{username}"
+      Title:
+        Text: ":arrow_left: ${#player.getName()} has left the server"
+      Fields:
+        - 'Realname:;[`${#player.getName()}`](https://namemc.com/profile/${#player.getUniqueId()});true'
+        - 'Nickname:;`{displayname}`;true'
+        - 'IP:;[`${#player.getAddress().getAddress().getHostAddress()}`](https://www.ip2location.com/demo/${#player.getAddress().getAddress().getHostAddress()});true'
+        - 'UUID:;```${#player.getUniqueId()}```;false'
+        - 'Location:;```/cmi tppos ${#player.getLocation().getBlockX()} ${#player.getLocation().getBlockY()} ${#player.getLocation().getBlockZ()} ${#player.getWorld().getName()}```;false'
+        - 'Gamemode:;`${#player.getGameMode().name().toLowerCase()}`;true'
+        - "Discord:;${#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId()) == null ? 'Not linked' : '<@'+#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId())+'>'};true"
+        - 'Mod Cmds:;
+          ```/cmi kick ${#player.getName()} please play within the /rules -s```
+          ```/cmi ban ${#player.getName()} not welcome - perm ban - appeal not possible -s```
+          ```/cmi ban ${#player.getName()} rule broken - appeal on discord via a new ticket https://discord.gg/floris -s```
+          ```/cmi ban ${#player.getName()} inappropriate username, change it and appeal via a ticket to rejoin https://discord.gg/floris -s```
+          ;false'
+        - 'Quit Message:;${#event.getQuitMessage() != null ? #event.getQuitMessage() : "None"};false'
+      Footer:
+        Text: 'Total players online: ${#server.getOnlinePlayers().size()}'
+
+  - Trigger: 'org.bukkit.event.player.PlayerQuitEvent'
+    Channel: '1396768167002509322'
+    Embed:
+      Color: "#ff4444"
+      ThumbnailUrl: "https://mineskin.eu/avatar/{username}"
+      Title:
+        Text: ":arrow_left: ${#player.getName()} has left the server"
+      Fields:
+        - 'Realname:;[`${#player.getName()}`](https://namemc.com/profile/${#player.getUniqueId()});true'
+        - 'Nickname:;`{displayname}`;true'
+        - 'UUID:;```${#player.getUniqueId()}```;false'
+        - 'Location:;```/cmi tppos ${#player.getLocation().getBlockX()} ${#player.getLocation().getBlockY()} ${#player.getLocation().getBlockZ()} ${#player.getWorld().getName()}```;false'
+        - 'Gamemode:;`${#player.getGameMode().name().toLowerCase()}`;true'
+        - "Discord:;${#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId()) == null ? 'Not linked' : '<@'+#discordsrv.accountLinkManager.getDiscordId(#player.getUniqueId())+'>'};true"
+        - 'Mod Cmds:;
+          ```/cmi kick ${#player.getName()} please play within the /rules -s```
+          ```/cmi ban ${#player.getName()} not welcome - perm ban - appeal not possible -s```
+          ```/cmi ban ${#player.getName()} rule broken - appeal on discord via a new ticket https://discord.gg/floris -s```
+          ```/cmi ban ${#player.getName()} inappropriate username, change it and appeal via a ticket to rejoin https://discord.gg/floris -s```
+          ;false'
+        - 'Quit Message:;${#event.getQuitMessage() != null ? #event.getQuitMessage() : "None"};false'
+      Footer:
+        Text: 'Total players online: ${#server.getOnlinePlayers().size()}'

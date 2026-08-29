@@ -1,0 +1,45 @@
+# Alert-ID: cmi/broadcast-player-command
+# Description: Mirrors a permitted in-game CMI broadcast command to Discord.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20broadcast%20-%20player%20broadcast%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Async: false
+    Conditions:
+      - '#command != null and #command.toLowerCase().startsWith("cmi broadcast ")'
+      - '#command.split(" ", 3).length > 2 and !#command.split(" ", 3)[2].trim().isEmpty()'
+      - '#event.getPlayer().hasPermission("cmi.command.broadcast")'
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#000001"
+      Author:
+        ImageUrl: "https://crafatar.com/avatars/${#event.getPlayer().getUniqueId()}?overlay"
+        Name: "Broadcast"
+        Url: ""
+      Description: |
+        `${#event.getPlayer().getName()} posted:`
+        ```md
+        # ${#command.split(" ", 3)[2]}
+        ```
+      Timestamp: true

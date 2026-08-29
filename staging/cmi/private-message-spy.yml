@@ -1,0 +1,43 @@
+# Alert-ID: cmi/private-message-spy
+# Description: Logs supported CMI private-message command aliases without exposing network information.
+# Plugin: CMI
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20cmi%20msg%20-%20msg%20user%20event.yml
+# Origin-Version: 0.3.0
+# Origin-Build: 034
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: CMI 9.8.9.9
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: org.bukkit.event.player.PlayerCommandPreprocessEvent
+    Async: false
+    Conditions:
+      - '#command != null'
+      - '(#command.toLowerCase().startsWith("cmi msg ") and #command.split(" ").length > 3) or ((#command.toLowerCase().startsWith("msg ") or #command.toLowerCase().startsWith("tell ") or #command.toLowerCase().startsWith("w ") or #command.toLowerCase().startsWith("whisper ") or #command.toLowerCase().startsWith("pm ") or #command.toLowerCase().startsWith("m ")) and #command.split(" ").length > 2)'
+    Channel: logs
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#6b5cff"
+      Title:
+        Text: "Private message"
+        Url: ""
+      Description: |
+        **Sender:** `${#event.getPlayer().getName()}`
+        **Receiver:** `${#command.toLowerCase().startsWith('cmi msg ') ? #command.split(' ')[2] : #command.split(' ')[1]}`
+        **Message:** `${#command.toLowerCase().startsWith('cmi msg ') ? #command.split(' ', 4)[3] : #command.split(' ', 3)[2]}`
+        **Location:** `/tppos ${#player.getLocation().getBlockX()} ${#player.getLocation().getBlockY()} ${#player.getLocation().getBlockZ()} ${#player.getWorld().getName()}`
+      Timestamp: true

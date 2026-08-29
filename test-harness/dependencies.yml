@@ -1,0 +1,36 @@
+Verified-Runtime:
+  Paper:
+    Minecraft: "26.2"
+    Build: "120"
+    Source: https://papermc.io/downloads/paper
+  Java: "25"
+  DiscordSRV:
+    Version: "1.30.5"
+    Build: "49"
+    Source: https://github.com/DiscordSRV/DiscordSRV/releases/tag/v1.30.5
+
+Available-Test-Plugins:
+  - Name: CMI
+    Version: "9.8.9.9"
+    Redistribution: prohibited
+    Source: https://www.spigotmc.org/resources/cmi.3742/
+  - Name: CMILib
+    Version: "1.5.9.9"
+    Redistribution: prohibited
+    Source: https://www.spigotmc.org/resources/cmilib.87610/
+  - Name: Jobs Reborn
+    Version: "5.2.6.5"
+    Redistribution: do-not-bundle
+    Source: https://www.spigotmc.org/resources/jobs-reborn.4216/
+  - Name: mcMMO
+    Version: "2.2.049"
+    Redistribution: do-not-bundle
+    Source: https://github.com/mcMMO-Dev/mcMMO
+  - Name: LuckPerms
+    Version: "5.5.57"
+    Redistribution: do-not-bundle
+    Source: https://luckperms.net/download
+  - Name: PlaceholderAPI
+    Version: "2.12.3-DEV-266"
+    Redistribution: do-not-bundle
+    Source: https://www.spigotmc.org/resources/placeholderapi.6245/

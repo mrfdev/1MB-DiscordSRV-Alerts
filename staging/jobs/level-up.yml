@@ -1,0 +1,40 @@
+# Alert-ID: jobs/level-up
+# Description: Announces a Jobs player reaching a new job level.
+# Plugin: Jobs Reborn
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Credit: Zrips
+# Origin-URL: https://github.com/mrfdev/CMI/blob/master/Resources/Add-ons/discordsrv/alert%20-%20jobs%20reborn%20level%20up%20-%20user%20level%20up%20event.yml
+# Origin-Version: 0.3.1
+# Origin-Build: 004
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: Jobs 5.2.6.5
+# Required-Plugin: CMILib 1.5.9.9
+# Verified-Date: unverified
+
+Alerts:
+  - Trigger: com.gamingmesh.jobs.api.JobsLevelUpEvent
+    Async: false
+    Conditions: []
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#00ff00"
+      Title:
+        Text: "${#event.getPlayer().getName()} leveled up in ${#event.getJob().getName()}"
+        Url: ""
+      Description: |
+        **${#event.getPlayer().getName()}** is now level **${#event.getLevel()}** as a **${#event.getJob().getName()}**.
+        Promotion: ${#event.getOldTitle().getName()} → ${#event.getNewTitle().getName()}
+      Timestamp: true
