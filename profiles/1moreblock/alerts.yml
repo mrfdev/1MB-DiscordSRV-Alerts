@@ -735,3 +735,73 @@ Alerts:
         - 'Quit Message:;${#event.getQuitMessage() != null ? #event.getQuitMessage() : "None"};false'
       Footer:
         Text: 'Total players online: ${#server.getOnlinePlayers().size()}'
+  # The legacy event exposes only getName(), not duration or leaderboard data.
+  # See docs/pyrofishingpro.md; automatic and manual starts need runtime verification.
+  - Trigger: me.arsmagica.API.TournamentStartEvent
+    Async: false
+    Conditions:
+      - "#event.getName() != null && !#event.getName().isBlank()"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#2ecc71"
+      Title:
+        Text: "Fishing tournament started!"
+      Description: |
+        The `${#event.getName().replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}` fishing tournament has started.
+        Grab your fishing rod and join in!
+      Timestamp: true
+  # Requires the private pfp-results channel mapping and final StopCommand in
+  # docs/pyrofishingpro-tournament-results.md. Replace the simple end Alert.
+  # Each message contains a snapshot; subsequent placeholder updates cannot change it.
+  - Trigger: github.scarsz.discordsrv.api.events.DiscordGuildMessageSentEvent
+    Async: false
+    Conditions:
+      - "#event.getMessage().getEmbeds().isEmpty() && #event.getMessage().getContentRaw().startsWith('[PFP-PLACEHOLDERS-v1]|')"
+      - "#event.getChannel().getId().equals(#discordsrv.getChannels().get('pfp-results'))"
+      - "#event.getMessage().getAuthor().getId().equals(#jda.getSelfUser().getId())"
+      - "#event.getMessage().getContentRaw().length() <= 768 && #event.getMessage().getContentRaw().split('[|]', -1).length == 5"
+      - "!#event.getMessage().getContentRaw().contains('%') && !#event.getMessage().getContentRaw().contains('$') && !#event.getMessage().getContentRaw().contains('{') && !#event.getMessage().getContentRaw().contains('}') && !#event.getMessage().getContentRaw().contains(';') && #event.getMessage().getContentRaw().indexOf(10) < 0 && #event.getMessage().getContentRaw().indexOf(13) < 0"
+      - "!#event.getMessage().getContentRaw().split('[|]', -1)[1].isBlank() && !#event.getMessage().getContentRaw().split('[|]', -1)[2].isBlank() && !#event.getMessage().getContentRaw().split('[|]', -1)[3].isBlank() && !#event.getMessage().getContentRaw().split('[|]', -1)[4].isBlank()"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#e67e22"
+      Title:
+        Text: "Fishing tournament ended"
+      Description: |
+        The `${#event.getMessage().getContentRaw().split('[|]', -1)[1].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}` fishing tournament has ended.
+        Thanks for taking part!
+      Fields:
+        - "🥇 1st Place;`${#event.getMessage().getContentRaw().split('[|]', -1)[2].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}`;true"
+        - "🥈 2nd Place;`${#event.getMessage().getContentRaw().split('[|]', -1)[3].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}`;true"
+        - "🥉 3rd Place;`${#event.getMessage().getContentRaw().split('[|]', -1)[4].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}`;true"
+      Timestamp: true
+  - Trigger: me.arsmagica.API.PyroFishCatchEvent
+    Async: false
+    Conditions:
+      - "#event.getPlayer() != null"
+      - "#event.getTier() != null && #event.getTier().matches('(?i)(platinum|mythical|divine)')"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#f1c40f"
+      Title:
+        Text: "Rare fish caught!"
+      Description: |
+        `{name}` caught `${#event.getItemStack() != null && #event.getItemStack().hasItemMeta() && #event.getItemStack().getItemMeta().hasDisplayName() ? #event.getItemStack().getItemMeta().getDisplayName().replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '') : 'fish #' + #event.getFishNumber()}`.
+        Tier: `${#event.getTier()}`
+        Hotspot bonus catch: **${#event.isHotspot() ? 'yes' : 'no'}**
+      Timestamp: true

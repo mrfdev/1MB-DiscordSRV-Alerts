@@ -1,0 +1,43 @@
+# Alert-ID: pyrofishingpro/rare-fish-catch
+# Description: Announces Platinum, Mythical, and Divine PyroFishingPro fish catches.
+# Plugin: PyroFishingPro
+# Alert-Version: 3.0.0
+# Alert-Build: 001
+# Status: candidate
+# Authors: mrfloris
+# Credit: PyroTempus for the legacy PyroFishingPro event API
+# Credit: Zrips and Jobs Reborn contributors for the legacy catch-event integration reference
+# Origin-URL: https://github.com/Zrips/Jobs/blob/91c1f27e108da18f4fbd33f7a68100016ce85186/src/main/java/com/gamingmesh/jobs/hooks/pyroFishingPro/PyroFishingProListener.java
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: PyroFishingPro 4.9.31 (legacy API required; 4.9.33 is incompatible)
+# Required-Plugin: PyroLib (version required by the installed PyroFishingPro build)
+# Verified-Date: unverified
+
+Alerts:
+  # Tier IDs, not translated display names. Edit the allowlist for your server.
+  # Both normal and Hotspot bonus catches qualify. See docs/pyrofishingpro.md.
+  - Trigger: me.arsmagica.API.PyroFishCatchEvent
+    Async: false
+    Conditions:
+      - "#event.getPlayer() != null"
+      - "#event.getTier() != null && #event.getTier().matches('(?i)(platinum|mythical|divine)')"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#f1c40f"
+      Title:
+        Text: "Rare fish caught!"
+      Description: |
+        `{name}` caught `${#event.getItemStack() != null && #event.getItemStack().hasItemMeta() && #event.getItemStack().getItemMeta().hasDisplayName() ? #event.getItemStack().getItemMeta().getDisplayName().replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '') : 'fish #' + #event.getFishNumber()}`.
+        Tier: `${#event.getTier()}`
+        Hotspot bonus catch: **${#event.isHotspot() ? 'yes' : 'no'}**
+      Timestamp: true

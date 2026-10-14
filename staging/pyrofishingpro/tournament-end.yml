@@ -1,0 +1,40 @@
+# Alert-ID: pyrofishingpro/tournament-end
+# Description: Announces the end of a PyroFishingPro fishing tournament.
+# Plugin: PyroFishingPro
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: PyroTempus for the legacy PyroFishingPro event API
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: PyroFishingPro 4.9.31 (legacy API required; 4.9.33 is incompatible)
+# Required-Plugin: PyroLib (version required by the installed PyroFishingPro build)
+# Verified-Date: unverified
+# Screenshot: screenshots/pyrofishingpro/tournament-end/default.png
+
+Alerts:
+  # getName() supplies no winners or reward-delivery status. This also covers stops.
+  # Basic delivery observed; see docs/pyrofishingpro.md for remaining transition checks.
+  - Trigger: me.arsmagica.API.TournamentEndEvent
+    Async: false
+    Conditions:
+      - "#event.getName() != null && !#event.getName().isBlank()"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#e67e22"
+      Title:
+        Text: "Fishing tournament ended"
+      Description: |
+        The `${#event.getName().replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}` fishing tournament has ended.
+        Thanks for taking part!
+      Timestamp: true

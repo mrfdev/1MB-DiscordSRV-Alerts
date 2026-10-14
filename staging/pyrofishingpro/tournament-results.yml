@@ -1,0 +1,51 @@
+# Alert-ID: pyrofishingpro/tournament-results
+# Description: Announces the three tournament winners captured from 1MB placeholders after PyroFishingPro StopCommands.
+# Plugin: PyroFishingPro
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: PyroTempus for the StopCommands placeholders and podium layout reference
+# License: GPL-3.0-or-later
+# Audience: player
+# Channel: global
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: PyroFishingPro 4.9.31 (StopCommands behavior requires verification on other builds)
+# Required-Plugin: PyroLib 1.4.9
+# Required-Plugin: PlaceholderAPI 2.12.3
+# Required-Plugin: 1MB Library Core and Placeholders 1.0.3-629 with their CMI and CMILib dependencies
+# Verified-Date: unverified
+
+Alerts:
+  # Requires the private pfp-results channel mapping and final StopCommand in
+  # docs/pyrofishingpro-tournament-results.md. Replace the simple end Alert.
+  # Each message contains a snapshot; subsequent placeholder updates cannot change it.
+  - Trigger: github.scarsz.discordsrv.api.events.DiscordGuildMessageSentEvent
+    Async: false
+    Conditions:
+      - "#event.getMessage().getEmbeds().isEmpty() && #event.getMessage().getContentRaw().startsWith('[PFP-PLACEHOLDERS-v1]|')"
+      - "#event.getChannel().getId().equals(#discordsrv.getChannels().get('pfp-results'))"
+      - "#event.getMessage().getAuthor().getId().equals(#jda.getSelfUser().getId())"
+      - "#event.getMessage().getContentRaw().length() <= 768 && #event.getMessage().getContentRaw().split('[|]', -1).length == 5"
+      - "!#event.getMessage().getContentRaw().contains('%') && !#event.getMessage().getContentRaw().contains('$') && !#event.getMessage().getContentRaw().contains('{') && !#event.getMessage().getContentRaw().contains('}') && !#event.getMessage().getContentRaw().contains(';') && #event.getMessage().getContentRaw().indexOf(10) < 0 && #event.getMessage().getContentRaw().indexOf(13) < 0"
+      - "!#event.getMessage().getContentRaw().split('[|]', -1)[1].isBlank() && !#event.getMessage().getContentRaw().split('[|]', -1)[2].isBlank() && !#event.getMessage().getContentRaw().split('[|]', -1)[3].isBlank() && !#event.getMessage().getContentRaw().split('[|]', -1)[4].isBlank()"
+    Channel: global
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#e67e22"
+      Title:
+        Text: "Fishing tournament ended"
+      Description: |
+        The `${#event.getMessage().getContentRaw().split('[|]', -1)[1].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}` fishing tournament has ended.
+        Thanks for taking part!
+      Fields:
+        - "🥇 1st Place;`${#event.getMessage().getContentRaw().split('[|]', -1)[2].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}`;true"
+        - "🥈 2nd Place;`${#event.getMessage().getContentRaw().split('[|]', -1)[3].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}`;true"
+        - "🥉 3rd Place;`${#event.getMessage().getContentRaw().split('[|]', -1)[4].replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '')}`;true"
+      Timestamp: true

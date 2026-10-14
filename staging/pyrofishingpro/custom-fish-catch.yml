@@ -1,0 +1,44 @@
+# Alert-ID: pyrofishingpro/custom-fish-catch
+# Description: Logs every PyroFishingPro custom fish catch, including rare tiers and Hotspot bonus fish.
+# Plugin: PyroFishingPro
+# Alert-Version: 3.0.0
+# Alert-Build: 002
+# Status: candidate
+# Authors: mrfloris
+# Credit: PyroTempus for the legacy PyroFishingPro event API
+# Credit: Zrips and Jobs Reborn contributors for the legacy catch-event integration reference
+# Origin-URL: https://github.com/Zrips/Jobs/blob/91c1f27e108da18f4fbd33f7a68100016ce85186/src/main/java/com/gamingmesh/jobs/hooks/pyroFishingPro/PyroFishingProListener.java
+# License: GPL-3.0-or-later
+# Audience: logs
+# Channel: logs
+# Verified-DiscordSRV: unverified
+# Verified-Paper: unverified
+# Verified-Java: unverified
+# Required-Plugin: PyroFishingPro 4.9.31 (legacy API required; 4.9.33 is incompatible)
+# Required-Plugin: PyroLib (version required by the installed PyroFishingPro build)
+# Verified-Date: unverified
+# Screenshot: screenshots/pyrofishingpro/custom-fish-catch/live-catch-and-tournaments.png
+
+Alerts:
+  # See docs/pyrofishingpro.md for compatibility and runtime verification.
+  # This includes rare catches; the separate rare-fish-catch Recipe goes to global.
+  - Trigger: me.arsmagica.API.PyroFishCatchEvent
+    Async: false
+    Conditions:
+      - "#event.getPlayer() != null"
+      - "#event.getTier() != null && !#event.getTier().isBlank()"
+    Channel: logs
+    IgnoreCancelled: true
+    Content: ""
+    Webhook:
+      Enabled: false
+    Embed:
+      Enabled: true
+      Color: "#3498db"
+      Title:
+        Text: "Custom fish caught"
+      Description: |
+        `{name}` caught `${#event.getItemStack() != null && #event.getItemStack().hasItemMeta() && #event.getItemStack().getItemMeta().hasDisplayName() ? #event.getItemStack().getItemMeta().getDisplayName().replaceAll('(?i)[§&][0-9a-fk-orx]', '').replace('`', '') : 'fish #' + #event.getFishNumber()}`.
+        Tier: `${#event.getTier()}`
+        Hotspot bonus catch: **${#event.isHotspot() ? 'yes' : 'no'}**
+      Timestamp: true
